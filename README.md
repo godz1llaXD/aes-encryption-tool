@@ -10,7 +10,7 @@ Planned to evolve into a cross-platform mobile app.
 - Secure key management (WIP)
 
 ## Usage
-Run `main.py` to launch the application.
+Run `aes_tool.py` to launch the application.
 
 ## Future Plans
 - Convert to mobile app using Kivy or Flutter

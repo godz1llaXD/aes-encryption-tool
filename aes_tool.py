@@ -1,6 +1,5 @@
-# AES-256 Secure Encryption/Decryption with GUI, Password Change, Clipboard Copy
-# Dependencies: pycryptodome, tkinter, pyperclip
-# Install: pip install pycryptodome pyperclip
+# AES-256 Encrypt/Decrypt GUI with Password Prompt on Startup
+# Install with: pip install pycryptodome pyperclip
 
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
@@ -9,13 +8,14 @@ import base64
 import tkinter as tk
 from tkinter import simpledialog, messagebox, scrolledtext
 import pyperclip
+import sys
 
-# === Parameters ===
+# === Constants ===
 iterations = 1000000
-key_length = 32  # AES-256
-session_password = None  # Global session password
+key_length = 32
+session_password = None  # Will be assigned at startup
 
-# === Padding & Unpadding ===
+# === Padding helpers ===
 def pad(msg):
     pad_len = 16 - len(msg.encode()) % 16
     return msg + chr(pad_len) * pad_len
@@ -48,27 +48,27 @@ def decrypt(b64_data, password):
 def encrypt_gui():
     global session_password
     if not session_password:
-        messagebox.showerror("Error", "No session password set.")
+        messagebox.showerror("Error", "No session password set.", parent=root)
         return
     text = input_text.get("1.0", tk.END).strip()
     if not text:
-        messagebox.showwarning("Missing Input", "Please enter text to encrypt.")
+        messagebox.showwarning("Missing Input", "Please enter text to encrypt.", parent=root)
         return
     try:
         encrypted = encrypt(text, session_password)
         output_text.delete("1.0", tk.END)
         output_text.insert(tk.END, encrypted)
         pyperclip.copy(encrypted)
-        messagebox.showinfo("Encrypted", "Text encrypted and copied to clipboard.")
+        messagebox.showinfo("Encrypted", "Text encrypted and copied to clipboard.", parent=root)
     except Exception as e:
-        messagebox.showerror("Error", f"Encryption failed: {str(e)}")
+        messagebox.showerror("Error", f"Encryption failed: {str(e)}", parent=root)
 
 def decrypt_gui():
     encrypted = input_text.get("1.0", tk.END).strip()
     if not encrypted:
-        messagebox.showwarning("Missing Input", "Please enter encrypted text to decrypt.")
+        messagebox.showwarning("Missing Input", "Please enter encrypted text to decrypt.", parent=root)
         return
-    pwd = simpledialog.askstring("Decrypt", "Enter decryption password:", show="*")
+    pwd = simpledialog.askstring("Decrypt", "Enter decryption password:", show="*", parent=root)
     if not pwd:
         return
     try:
@@ -76,41 +76,56 @@ def decrypt_gui():
         output_text.delete("1.0", tk.END)
         output_text.insert(tk.END, decrypted)
     except Exception:
-        messagebox.showerror("Failed", "Decryption failed. Wrong password or bad data.")
+        messagebox.showerror("Failed", "Decryption failed. Wrong password or bad data.", parent=root)
 
 def set_password():
     global session_password
-    session_password = simpledialog.askstring("Set Password", "Enter encryption password:", show="*")
+    session_password = simpledialog.askstring("Set Password", "Enter encryption password:", show="*", parent=root)
     if session_password:
-        messagebox.showinfo("Password Set", "Encryption password set for this session.")
+        messagebox.showinfo("Password Set", "Session password set successfully.", parent=root)
 
 def change_password():
     global session_password
-    old_pwd = simpledialog.askstring("Change Password", "Enter current password:", show="*")
+    old_pwd = simpledialog.askstring("Change Password", "Enter current password:", show="*", parent=root)
     if old_pwd != session_password:
-        messagebox.showerror("Incorrect", "Old password is incorrect.")
+        messagebox.showerror("Incorrect", "Old password is incorrect.", parent=root)
         return
-    new_pwd = simpledialog.askstring("Change Password", "Enter new password:", show="*")
-    confirm_pwd = simpledialog.askstring("Change Password", "Confirm new password:", show="*")
+    new_pwd = simpledialog.askstring("Change Password", "Enter new password:", show="*", parent=root)
+    confirm_pwd = simpledialog.askstring("Change Password", "Confirm new password:", show="*", parent=root)
     if new_pwd != confirm_pwd:
-        messagebox.showerror("Mismatch", "New passwords do not match.")
+        messagebox.showerror("Mismatch", "New passwords do not match.", parent=root)
     else:
         session_password = new_pwd
-        messagebox.showinfo("Changed", "Password changed successfully.")
+        messagebox.showinfo("Changed", "Password changed successfully.", parent=root)
 
-# === GUI Layout ===
+# === Initialize GUI ===
 root = tk.Tk()
 root.title("AES-256 Encryptor")
+root.geometry("700x600")
 
+# Bring window to front briefly
+root.lift()
+root.attributes("-topmost", True)
+root.after(500, lambda: root.attributes("-topmost", False))
+
+# Ask for session password before continuing
+while not session_password:
+    session_password = simpledialog.askstring("Startup Password", "Set session password to begin:", show="*", parent=root)
+    if not session_password:
+        confirm = messagebox.askyesno("Exit?", "No password set. Exit application?", parent=root)
+        if confirm:
+            sys.exit()
+
+# === Layout ===
 frame = tk.Frame(root, padx=10, pady=10)
 frame.pack()
 
 tk.Label(frame, text="Input Message / Encrypted Text:").pack()
-input_text = scrolledtext.ScrolledText(frame, height=8, width=70)
+input_text = scrolledtext.ScrolledText(frame, height=8, width=80)
 input_text.pack()
 
 tk.Label(frame, text="Output:").pack()
-output_text = scrolledtext.ScrolledText(frame, height=8, width=70)
+output_text = scrolledtext.ScrolledText(frame, height=8, width=80)
 output_text.pack()
 
 btn_frame = tk.Frame(frame)
