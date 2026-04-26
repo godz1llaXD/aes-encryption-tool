@@ -1,0 +1,74 @@
+MDScreen:
+
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "24dp"
+        spacing: "16dp"
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        size_hint: 0.9, None
+        height: self.minimum_height
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: "48dp"
+            MDLabel:
+                text: "AES-256 GCM Encryptor"
+                font_style: "H5"
+                valign: "center"
+            MDIconButton:
+                icon: "theme-light-dark"
+                pos_hint: {"center_y": 0.5}
+                on_release: app.toggle_theme()
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: "8dp"
+            size_hint_y: None
+            height: self.minimum_height
+            
+            MDTextField:
+                id: password_input
+                hint_text: "Enter password"
+                password: app.password_hidden
+                
+            MDIconButton:
+                icon: "eye-off" if app.password_hidden else "eye"
+                pos_hint: {"center_y": 0.5}
+                on_release: app.toggle_password_visibility()
+
+        MDTextField:
+            id: input_text
+            hint_text: "Enter text to encrypt/decrypt"
+            multiline: True
+            on_text: output_text.text = ""  # Auto-clear output
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: "16dp"
+            size_hint_y: None
+            height: "48dp"
+            
+            MDRaisedButton:
+                text: "Encrypt"
+                size_hint_x: 1
+                on_release:
+                    output_text.text = app.encrypt_text(input_text.text)
+
+            MDRaisedButton:
+                text: "Decrypt"
+                size_hint_x: 1
+                on_release:
+                    output_text.text = app.decrypt_text(input_text.text)
+
+        MDTextField:
+            id: output_text
+            hint_text: "Output"
+            multiline: True
+            readonly: True
+
+        MDRaisedButton:
+            text: "Clear Fields"
+            pos_hint: {"center_x": 0.5}
+            on_release:
+                app.clear_fields()
