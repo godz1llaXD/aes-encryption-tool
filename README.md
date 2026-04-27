@@ -122,6 +122,24 @@ Encrypted: U2FsdGVkX1+...
 
 ### Screenshots
 
+### Main Interface
+![Main UI](assets/main_ui.png)
+
+### Encryption Input
+![Encrypt Input](assets/encrypt_input.png)
+
+### Encrypted Output
+![Encrypt Output](assets/encrypt_output.png)
+
+### Decryption Input
+![Decrypt Input](assets/decrypt_input.png)
+
+### Decrypted Output
+![Decrypt Output](assets/decrypt_output.png)
+
+### Error Handling
+![Error](assets/error.png)
+
 ---
 
 ### License
